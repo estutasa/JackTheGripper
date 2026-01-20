@@ -18,4 +18,4 @@ NISE Project 2
 1. Connect to WIFI network `nise0XX` (Password: `nise2025`).
 2. Run `python main_rehab.py`.
 3. In CLI, type `c` (connect), then `udr 63` (start sampling), then `e on` (event-mode).
-4. Deactivate firmware feedback with `of off`.
+4. Deactivate firmware feedback with `e off`.
