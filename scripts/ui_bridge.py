@@ -15,4 +15,4 @@ class UiBridge:
         packet = f"UI_DATA|SC:{sc_id}|STATE:{state}|VAL:{val:.4f}"
         
         # Step 2: Output for external GUI script capture
-        print(packet)
+        # print(packet)

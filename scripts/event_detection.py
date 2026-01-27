@@ -1,40 +1,26 @@
 """
 FILE HEADER: event_detection.py
-PURPOSE: Implements neuromorphic logic to classify hand-grip interactions.
-STRUCTURE: Contains the GripLogic class using temporal frequency analysis.
+MAIN FUNCTION: GripLogic class for real-time classification.
+INPUTS: Force event values from e-skin.
+OUTPUTS: Classification state (0: Idle, 1: Good, 2: Bad).
 """
-
 import time
 
 class GripLogic:
     def __init__(self):
-        """
-        PURPOSE: Initialize state tracking variables.
-        INPUTS: None
-        OUTPUTS: None
-        """
-        self.last_event_time = 0
-        self.spasm_frequency = 0.05 # Max time between events for a spasm (20Hz+)
+        self.last_time = 0
+        self.spasm_interval = 0.08 # Adjustable: less than 80ms between touches is "Bad"
 
     def analyze_touch(self, force_val):
         """
-        PURPOSE: Classify incoming force events as Controlled Grip or Spasm.
-        INPUTS: force_val (float) - The force intensity from a skin cell event.
-        OUTPUTS: state (int) - 0: Idle, 1: Controlled Grip, 2: Spasm.
+        Analyzes the frequency of events to detect spasms.
         """
-        # Step 1: Calculate time elapsed since last event
         current_time = time.time()
-        time_diff = current_time - self.last_event_time
-        
-        # Step 2: Determine state based on temporal frequency and force
-        if force_val > 0.04: # Using Force Threshold 
-            if time_diff < self.spasm_frequency and self.last_event_time != 0:
-                state = 2 # Spasm (High frequency burst)
-            else:
-                state = 1 # Controlled Grip (Steady intent)
-        else:
-            state = 0 # No contact
-            
-        # Step 3: Update timestamp and return
-        self.last_event_time = current_time
-        return state
+        diff = current_time - self.last_time
+        self.last_time = current_time
+
+        if force_val > 0.04: # Threshold to ignore noise
+            if diff < self.spasm_interval:
+                return 2 # Bad Grip (red)
+            return 1 # Good Grip (green)
+        return 0 # White (idle)
