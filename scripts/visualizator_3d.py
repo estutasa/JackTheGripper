@@ -46,7 +46,8 @@ class Visualizator3D(QMainWindow):
             #Add e-skin sensor grid
             self.create_sensor_grid()
             self.timer=QTimer()
-            self.timer.timeout.connect(self.run_dummy_stimulator)
+            self.timer.timeout.connect(self.run_dummy_stimulation)
+            self.timer.start(100)
         except Exception as e:
             print(f"Error loading STL: {e}")
     
@@ -54,11 +55,15 @@ class Visualizator3D(QMainWindow):
     #INPUTS:None
     #OUTPUTS:None, items added directly to self.viewer
     def create_sensor_grid(self):
+        #Your specific ID group
+        left_ids=[4,5,7,9,11]
+        right_ids=[1,16,15,14,13]
+        center_ids=[2,3,6,8,10,12]
         #Generate "sensors" over semicircle
         rows=14
         cols=16
         #Values our desing
-        length=100 #PREGUNTAR SARA LOS VALORES DE NUESTRO CILINDRO
+        length=100
         radius=25.5
         #Move mesh to be aling with STL design
         offset_y=25
@@ -70,6 +75,12 @@ class Visualizator3D(QMainWindow):
         #Node generation loop
         for i in range(rows):
             for j in range(cols):
+                if i>8:
+                    sensor_id=left_ids[j %len(left_ids)]
+                elif i>3:
+                    sensor_id=center_ids[j %len(center_ids)]
+                else:
+                    sensor_id=right_ids[j %len(right_ids)]
                 #Angle from 0 to 180 degrees
                 angle=start_angle+total_angle*(j/(cols-1))
                  #Coordinates
@@ -85,14 +96,7 @@ class Visualizator3D(QMainWindow):
                 node.rotate(angle_deg+90,1,0,0)
 
                 node.translate(x,y,z)
-                node.opts['sensor_id']=j
-
-                if j<5:
-                    node.opts['zone']='Left'
-                elif j<11:
-                    node.opts['zone']='Center'
-                else:
-                    node.opts['zone']='Right'
+                node.opts['sensor_id']=sensor_id
                 self.viewer.addItem(node)
                 self.sensor_nodes.append(node)
     
@@ -107,15 +111,20 @@ class Visualizator3D(QMainWindow):
         for node in self.sensor_nodes:
             #Get assigned ID from create_sensor_grid
             physical_id=node.opts['sensor_id']
-            intensity=data_vector[physical_id]
+            intensity=data_vector[physical_id-1]
             #Apply heatmap (Blue =low, Red=high)
             node.setColor((intensity,0,1-intensity,1))
     
-    def run_dummy_stimulator(self):
+    def run_dummy_stimulation(self):
         #Genrate fake 16-sensor variable to test heatmap
-        t=time.time()
-        dummy_vector = [0.5 + 0.5 * np.sin(t + i * 0.8) for i in range(16)]
-        self.update_with_real_data(dummy_vector)
+        test_vector=[0.0]*16
+        left_ids=[4,5,7,9,11]
+        right_ids=[1,16,15,14,13]
+        center_ids=[2,3,6,8,10,12]
+        for sensor_id in center_ids:
+            test_vector[sensor_id-1]=1.0
+        print(f"DEBUG: Enviando datos de test: {test_vector}")    
+        self.update_with_real_data(test_vector)
 
 
 
@@ -123,9 +132,5 @@ if __name__=="__main__":
     app=QApplication(sys.argv)
     window=Visualizator3D('cylinder_5cm.STL')
     window.show()
-
-    timer=QTimer()
-    timer.timeout.connect(window.run_dummy_stimulator)
-    timer.start(100)
-
-    sys.exit(app.exec()) 
+    sys.exit(app.exec())
+     
