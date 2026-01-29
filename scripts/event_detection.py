@@ -6,7 +6,7 @@ PURPOSE: Simple classification for stroke rehab.
 class GripLogic:
     def __init__(self):
         # Once 'store offsets' is run, these values start from 0.0
-        self.STRONG_GRIP = 0.23  # Good pressure -> Green
+        self.STRONG_GRIP = 0.23  # Good pressure -> Green - 9kg target force (clinical research)
         self.WEAK_GRIP = 0.05    # Light touch -> Red
 
     def classify(self, force_val):
@@ -17,5 +17,6 @@ class GripLogic:
             print("GOOD FORCE:", force_val) 
             return 1
         elif force_val > self.WEAK_GRIP:
+            print("BAD FORCE:", force_val) 
             return 2
         return 0
