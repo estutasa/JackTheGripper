@@ -75,7 +75,7 @@ class Visualizator3D(QMainWindow):
             #Add e-skin sensor grid
             self.create_sensor_grid()
             self.timer=QTimer()
-            self.timer.timeout.connect(self.run_dummy_stimulation)
+            #self.timer.timeout.connect(self.run_dummy_stimulation)
             #self.timer.start(100)
         except Exception as e:
             print(f"Error loading STL: {e}")
@@ -176,17 +176,19 @@ class Visualizator3D(QMainWindow):
         except:
             pass
 
-    def run_dummy_stimulation(self):
+    """def run_dummy_stimulation(self):
         #Genrate fake 16-sensor variable to test heatmap
         test_vector = [0.1]*16
         for sid in [2, 3, 6, 8, 10, 12]: test_vector[sid-1] = 0.4
-        self.comm.data_signal.emit(test_vector)
+        self.comm.data_signal.emit(test_vector)"""
 
 
+"""
 if __name__=="__main__":
     app=QApplication(sys.argv)
     window=Visualizator3D('cylinder_5cm.STL')
     window.show()
     window.timer.start(100)
     sys.exit(app.exec())
+    """
      
