@@ -1,18 +1,11 @@
 """
 FILE HEADER: ui_bridge.py
-PURPOSE: Bridges the real-time event stream to the GUI visualization.
-STRUCTURE: Formats data packets for the Tactile Homunculus[cite: 47].
+PURPOSE: Standardizes data stream for the Homunculus GUI
 """
-
 class UiBridge:
-    def format_for_gui(self, sc_id, state, val):
+    def send(self, sc_id, state, val):
         """
-        PURPOSE: Print standardized strings for the GUI to parse.
-        INPUTS: sc_id (int), state (int), val (float).
-        OUTPUTS: Formatted string to stdout.
+        Outputs data formatted for capture by the GUI module
+        INPUTS: sc_id (cell ID), state (classification), val (force value)
         """
-        # Step 1: Build data packet string
-        packet = f"UI_DATA|SC:{sc_id}|STATE:{state}|VAL:{val:.4f}"
-        
-        # Step 2: Output for external GUI script capture
-        print(packet)
+        print(f"DATA|ID:{sc_id}|ST:{state}|VAL:{val:.4f}")
