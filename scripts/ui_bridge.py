@@ -7,11 +7,11 @@ class UIBridge:
         self.gui=visualizer_window
         #Define clinical zones
         self.zones={"left":range(0,5),"center":range(5,11),"right":range(11,16)}
-    
+        self.THRESHOLD_GREEN=0.34
+
     def process_and_stream(self, raw_scn_data):
         #Maps raw hardware data to a 16-senosr intensity vector. 
         #Inputs: raw_scn_data(dict)-Data received from the WIFI interface
-
         #Initialize 16 sensors (5-6-5 layour logic happens here)
         intensity_vector=[0.0]*16
         #Iterating through cell IDs 1-16 
@@ -19,10 +19,10 @@ class UIBridge:
             #Extract sensor value (eg. proximity or force)
             raw_val=data.get('force',0)
             #Normalize: Assuming 0-500 is the typical rae range
-            normalized=np.clip(raw_val/500.0,0,1)
+            normalized=np.clip(raw_val/self.THRESHOLD_GREEN,0,1)
             if 1<=cell_id <=16:
                 intensity_vector[cell_id-1]=normalized
-        self.gui.update_with_real_data(intensity_vector)
+        self.gui.comm.data_signal.emit(intensity_vector)
     
     def get_zone_averages(self,intensity_vector):
         #Calculaes average pressure for 5-6-5 zones.

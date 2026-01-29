@@ -1,13 +1,15 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget,QLabel
-from PyQt6.QtCore import QTimer
+from PyQt6.QtCore import QTimer, pyqtSignal, QObject
 import pyqtgraph.opengl as gl
 from PyQt6.QtGui import QVector3D
 from stl import mesh
 import numpy as np
 import time
-#Purpose: Renders the 3D handle and e-skin grid. Maps 16 physical sensors to a hight density hexagonal mesh using a heatmap
+class DataComm(QObject):
+    data_signal=pyqtSignal(list)
 
+#Purpose: Renders the 3D handle and e-skin grid. Maps 16 physical sensors to a hight density hexagonal mesh using a heatmap
 class Visualizator3D(QMainWindow):
     #Initialize the GUI window, 3D engine, set up camera and load the handle model.
     #INPUTS: file_stl (str): Path to the .STL file to be loaded
@@ -30,6 +32,7 @@ class Visualizator3D(QMainWindow):
         #Camera configuation
         self.viewer.opts['center']=QVector3D(0,0,0)
         self.viewer.setCameraPosition(distance=300, elevation=10,azimuth=90)        
+        self.viewer.setBackgroundColor('k')
         #Load Geometry 
         try:
             #import STL FILE
@@ -38,16 +41,20 @@ class Visualizator3D(QMainWindow):
             points=my_mesh.points.reshape(-1,3)
             faces=np.arange(len(points)).reshape(-1,3)
             #Add 3D mesh to the viewer
-            self.mesh_item=gl.GLMeshItem(vertexes=points, faces=faces, smooth=True,color=(0.7,0.7,0.7,1.0),shader='normalColor')
+            self.mesh_item=gl.GLMeshItem(vertexes=points, faces=faces, smooth=True,color=(0.85,0.85,0.85,1.0),shader='normalColor')
             #Rotation
             self.mesh_item.rotate(90,0,0,1)
             self.mesh_item.rotate(-90,0,1,0)
             self.viewer.addItem(self.mesh_item)
+
+            self.comm = DataComm()
+            # 2. Conectamos la señal a tu función de actualización
+            self.comm.data_signal.connect(self.update_with_real_data)
             #Add e-skin sensor grid
             self.create_sensor_grid()
             self.timer=QTimer()
             self.timer.timeout.connect(self.run_dummy_stimulation)
-            self.timer.start(100)
+            #self.timer.start(100)
         except Exception as e:
             print(f"Error loading STL: {e}")
     
@@ -58,7 +65,7 @@ class Visualizator3D(QMainWindow):
         #Your specific ID group
         left_ids=[4,5,7,9,11]
         right_ids=[1,16,15,14,13]
-        center_ids=[2,3,6,8,10,12]
+        center_ids=[2,4,6,8,10,12]
         #Generate "sensors" over semicircle
         rows=14
         cols=16
@@ -75,12 +82,17 @@ class Visualizator3D(QMainWindow):
         #Node generation loop
         for i in range(rows):
             for j in range(cols):
-                if i>8:
-                    sensor_id=left_ids[j %len(left_ids)]
-                elif i>3:
-                    sensor_id=center_ids[j %len(center_ids)]
+
+                if i < 5: 
+                    ids_zona = right_ids
+                    sensor_id = ids_zona[min(j // 4, 4)] 
+                elif i < 10: 
+                    ids_zona = center_ids
+                    sensor_id = ids_zona[min(j // 3, 5)]
                 else:
-                    sensor_id=right_ids[j %len(right_ids)]
+                    ids_zona = left_ids
+                    sensor_id = ids_zona[min(j // 4, 4)]
+
                 #Angle from 0 to 180 degrees
                 angle=start_angle+total_angle*(j/(cols-1))
                  #Coordinates
@@ -89,7 +101,7 @@ class Visualizator3D(QMainWindow):
                 z=radius*np.sin(angle)+offset_z
                 #Geometry e-skin
                 hexagon_data  =gl.MeshData.sphere(rows=2,cols=6)
-                node=gl.GLMeshItem(meshdata=hexagon_data, smooth=False, color=(0,0,1,1),shader='shaded')
+                node=gl.GLMeshItem(meshdata=hexagon_data, smooth=False, color=(0.6,0.6,0.6,1),shader='shaded')
                 #Sensors bigger for r=5
                 node.scale(5.0,5.0,0.2)
                 angle_deg=np.degrees(angle)
@@ -107,23 +119,31 @@ class Visualizator3D(QMainWindow):
         #Validate input length
         if len(data_vector) !=16:
             return
+        threshold=0.34
         #Update each node based on its assigned physical ID
         for node in self.sensor_nodes:
             #Get assigned ID from create_sensor_grid
             physical_id=node.opts['sensor_id']
             intensity=data_vector[physical_id-1]
-            #Apply heatmap (Blue =low, Red=high)
-            node.setColor((intensity,0,1-intensity,1))
-    
+            if intensity >= threshold:
+                #bright green
+                node.setColor((0.0, 0.0, 8, 1))
+            else:
+                #increase progressively
+                red = 0.6 * (1 - intensity)
+                green = 0.6 * (1 - intensity)
+                blue = 0.6 + (0.4 * intensity)
+                node.setColor((red, green, blue, 1))
+
     def run_dummy_stimulation(self):
         #Genrate fake 16-sensor variable to test heatmap
-        test_vector=[0.0]*16
-        left_ids=[4,5,7,9,11]
+        test_vector=[0.1]*16
+        left_ids=[2,5,7,9,11]
         right_ids=[1,16,15,14,13]
-        center_ids=[2,3,6,8,10,12]
+        center_ids=[3,4,6,8,10,12]
         for sensor_id in center_ids:
             test_vector[sensor_id-1]=1.0
-        print(f"DEBUG: Enviando datos de test: {test_vector}")    
+        print(f"DfEBUG: Enviando datos de test: {test_vector}")    
         self.update_with_real_data(test_vector)
 
 
@@ -132,5 +152,6 @@ if __name__=="__main__":
     app=QApplication(sys.argv)
     window=Visualizator3D('cylinder_5cm.STL')
     window.show()
+    window.timer.start(100)
     sys.exit(app.exec())
      
