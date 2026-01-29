@@ -3,7 +3,7 @@ import numpy as np
 class UIBridge:
     def __init__(self,visualizer_window):
         #Initializes the bridge with a reference to the 3D window
-        #Inputs:visualizer_window-The instance of Visualizator3D
+        #Inputs:visualizer_window. The instance of Visualizator3D
         self.gui=visualizer_window
         #Define clinical zones
         self.zones={"left":range(0,5),"center":range(5,11),"right":range(11,16)}

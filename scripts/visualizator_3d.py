@@ -1,7 +1,8 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget,QLabel
-from PyQt6.QtCore import QTimer, pyqtSignal, QObject
+from PyQt6.QtCore import QTimer, pyqtSignal, QObject, Qt
 import pyqtgraph.opengl as gl
+import pyqtgraph as pg
 from PyQt6.QtGui import QVector3D
 from stl import mesh
 import numpy as np
@@ -16,12 +17,32 @@ class Visualizator3D(QMainWindow):
     #OUTPUTS: None (Initializes class instance)
     def __init__(self, file_stl):
         super().__init__()
-        #Window configuration
         self.setWindowTitle("3D HOMUNCULUS")
         self.resize(1024,768)
+
+        self.container=QWidget()
+        self.setCentralWidget(self.container)
+        self.layout=QVBoxLayout(self.container)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setSpacing(10)
         #3D VIEWER setup
         self.viewer=gl.GLViewWidget()
-        self.setCentralWidget(self.viewer)
+        self.layout.addWidget(self.viewer, stretch=3)
+
+        self.feedback_label=QLabel("Grip Stronger")
+        self.feedback_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.feedback_label.setStyleSheet("font-size: 30px; font-weight: bold; color: #FF4444; background-color: black; padding: 10px;")
+        self.layout.addWidget(self.feedback_label)
+        #Performance chart
+        self.plot_widget=pg.PlotWidget(title="Performance Tracking")
+        self.plot_widget.setBackground('k')
+        self.plot_widget.setYRange(0, 1.0)
+        self.layout.addWidget(self.plot_widget, stretch=1)
+        self.target_line = pg.InfiniteLine(pos=0.34, angle=0, pen=pg.mkPen('y', width=2, style=Qt.PenStyle.DashLine))
+        self.plot_widget.addItem(self.target_line)
+
+        self.data_history=[]
+        self.curve=self.plot_widget.plot(pen=pg.mkPen('w', width=2))
         #Data storage: List to store sensor nodes for the heatamap
         self.sensor_nodes=[]
         #axes representation
@@ -33,6 +54,7 @@ class Visualizator3D(QMainWindow):
         self.viewer.opts['center']=QVector3D(0,0,0)
         self.viewer.setCameraPosition(distance=300, elevation=10,azimuth=90)        
         self.viewer.setBackgroundColor('k')
+
         #Load Geometry 
         try:
             #import STL FILE
@@ -48,7 +70,7 @@ class Visualizator3D(QMainWindow):
             self.viewer.addItem(self.mesh_item)
 
             self.comm = DataComm()
-            # 2. Conectamos la señal a tu función de actualización
+            # connect signal to updated
             self.comm.data_signal.connect(self.update_with_real_data)
             #Add e-skin sensor grid
             self.create_sensor_grid()
@@ -65,7 +87,7 @@ class Visualizator3D(QMainWindow):
         #Your specific ID group
         left_ids=[4,5,7,9,11]
         right_ids=[1,16,15,14,13]
-        center_ids=[2,4,6,8,10,12]
+        center_ids=[2,3,6,8,10,12]
         #Generate "sensors" over semicircle
         rows=14
         cols=16
@@ -119,7 +141,18 @@ class Visualizator3D(QMainWindow):
         #Validate input length
         if len(data_vector) !=16:
             return
-        threshold=0.34
+        threshold=0.33
+        weak_threshold=0.05
+        avg_intensity = sum(data_vector) / 16
+        if avg_intensity<weak_threshold:
+            self.feedback_label.setText("PLEASE GRIP")
+            self.feedback_label.setStyleSheet("font-size: 30px; font-weight: bold; color: #FFFFFF; background-color: black; padding: 10px;")
+        elif avg_intensity >= threshold:
+            self.feedback_label.setText("GOOD JOB!")
+            self.feedback_label.setStyleSheet("font-size: 32px; font-weight: bold; color: #00FF00; background-color: black; padding: 10px;")
+        else:
+            self.feedback_label.setText("Grip stronger")
+            self.feedback_label.setStyleSheet("font-size: 30px; font-weight: bold; color: #FF4444; background-color: black; padding: 10px;")
         #Update each node based on its assigned physical ID
         for node in self.sensor_nodes:
             #Get assigned ID from create_sensor_grid
@@ -134,18 +167,20 @@ class Visualizator3D(QMainWindow):
                 green = 0.6 * (1 - intensity)
                 blue = 0.6 + (0.4 * intensity)
                 node.setColor((red, green, blue, 1))
+        
+        #Update graph
+        try:
+            self.data_history.append(sum(data_vector)/16)
+            if len(self.data_history) > 100: self.data_history.pop(0)
+            self.curve.setData(self.data_history)
+        except:
+            pass
 
     def run_dummy_stimulation(self):
         #Genrate fake 16-sensor variable to test heatmap
-        test_vector=[0.1]*16
-        left_ids=[2,5,7,9,11]
-        right_ids=[1,16,15,14,13]
-        center_ids=[3,4,6,8,10,12]
-        for sensor_id in center_ids:
-            test_vector[sensor_id-1]=1.0
-        print(f"DfEBUG: Enviando datos de test: {test_vector}")    
-        self.update_with_real_data(test_vector)
-
+        test_vector = [0.1]*16
+        for sid in [2, 3, 6, 8, 10, 12]: test_vector[sid-1] = 0.4
+        self.comm.data_signal.emit(test_vector)
 
 
 if __name__=="__main__":
