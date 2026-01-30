@@ -86,9 +86,9 @@ class Visualizator3D(QMainWindow):
          #Generates hexagones and maps them to 16 physical regions
         #INPUTS:None
         #OUTPUTS:None
-        left_ids=[4,5,7,9,11]
+        left_ids=[3,5,7,9,11]
         right_ids=[1,16,15,14,13]
-        center_ids=[2,3,6,8,10,12]
+        center_ids=[2,4,6,8,10,12]
         #Generate "sensors" over semicircle
         rows=14
         cols=16
