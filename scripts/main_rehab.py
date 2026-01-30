@@ -1,4 +1,9 @@
 #!/usr/bin/python3
+"""
+FILE: main_rehab.py
+PURPOSE: Main part. Initiliazes the hardware interface (hwi), the 3D visualiztation, rehabilitation logic, and manages
+        user commands via a console-based loop
+"""
 import logging
 import sys
 import os
@@ -16,6 +21,9 @@ from led_feedback import LedFeedbackRehab
 from visualizator_3d import Visualizator3D
 
 def console_loop(rehab_sys, hwi, data_pub, handlers):
+    #Handles real-time user input from the terminal to control the system
+    #Inputs: rehab_sys. hwi, data_pub and handlers
+    #Outputs:none
     print(">>> JACK THE GRIPPER: READY <<<")
     print("Sequence: c -> udr 63 -> store offsets -> tut on")
     while True:
@@ -57,6 +65,8 @@ def console_loop(rehab_sys, hwi, data_pub, handlers):
             os._exit(0)
 
 if __name__ == '__main__':
+     #Main execution block. Initialized GUI, hardware, and communication layers
+       
     logging.basicConfig(level=logging.CRITICAL)
     
     app = QApplication(sys.argv)
@@ -70,7 +80,6 @@ if __name__ == '__main__':
 
     data_pub = DataPublisher(hwi)
     led_ctrl = LedControl(hwi)
-    #Handlers list updated to include EventControl for 'store offsets'
     handlers = [IdControl(hwi), SensControl(hwi), CfControl(hwi), 
                 UdrControl(hwi), led_ctrl, EventsControl(hwi)]
 
