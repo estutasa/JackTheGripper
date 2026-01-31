@@ -1,10 +1,9 @@
 """ 
-FILE:led_feedback.py
+FILE: led_feedback.py
 Purpose: Manages real time feedback loop for the rehabilitation systems. 
-        Coordinates LED colors based on pressure levels and synchronizes 
-        data tranmission to the 3D visualization interface.
+Coordinates LED colors based on pressure levels and synchronizes 
+data tranmission to the 3D visualization interface.
 """
-
 import threading
 import time
 from scn.ctrl.handler.led_control import COLOR_VAL_MAP
@@ -14,9 +13,11 @@ from ui_bridge import UIBridge
 
 class LedFeedbackRehab:
     def __init__(self, hwi, data_pub, led_ctrl, visualizer=None):
-        #Initializes feedback controller
-        #Inputs: hwi, data_pub, led_ctrl, visualizer
-        #Outputs:none
+        """
+        Initializes feedback controller
+        Inputs: hwi, data_pub, led_ctrl, visualizer
+        Outputs:none
+        """
         self.__hwi = hwi
         self.__data_pub = data_pub
         self.__led_ctrl = led_ctrl
@@ -41,9 +42,11 @@ class LedFeedbackRehab:
             self.__started = True
 
     def stop(self):
-        #Safely stops the background thread and resets the led hardware
-        #Inputs: none
-        #Outputs:none
+        """
+        Safely stops the background thread and resets the led hardware
+        Inputs: none
+        Outputs:none
+        """
         if self.__started:
             self.__stop_event.set()
             if self.__thread.is_alive():
@@ -51,15 +54,19 @@ class LedFeedbackRehab:
             self.__started = False
             self.__led_ctrl.set_led_color_val(COLOR_VAL_MAP.get("white"))
     
-    #Returns the current execution status of the controller
-    #Inputs: none
-    #Outputs:bool, true if loop running
+    """
+    Returns the current execution status of the controller
+    Inputs: none
+    Outputs:bool, true if loop running
+    """
     def isStarted(self): return self.__started
 
     def __update(self):
-        #Performs single update cycle, fetches the data, updates UI and sets LED state
-        #Inputs:none
-        #Outputs:none
+        """
+        Performs single update cycle, fetches the data, updates UI and sets LED state
+        Inputs:none
+        Outputs:none
+        """
         sc_data_list = self.__data_pub.sc_data()
         if not sc_data_list: return
 
@@ -91,9 +98,11 @@ class LedFeedbackRehab:
 
                 
     def __run(self):
-        #Main loop execution for the background thread
-        #Inputs: none
-        #Outputs:none
+        """
+        Main loop execution for the background thread
+        Inputs: none
+        Outputs:none
+        """
         while not self.__stop_event.is_set():
             self.__update()
             with self.__mutex:

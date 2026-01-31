@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 """
 FILE: main_rehab.py
-PURPOSE: Main part. Initiliazes the hardware interface (hwi), the 3D visualiztation, rehabilitation logic, and manages
-        user commands via a console-based loop
+PURPOSE: Main part. Initiliazes the hardware interface, the 3D visualiztation, rehabilitation logic, and manages
+user commands via a console-based loop
 """
 import logging
 import sys
@@ -10,7 +10,7 @@ import os
 import threading
 import time
 
-# Path fix for SCN library
+# path fix for SCN library
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from PyQt6.QtWidgets import QApplication
@@ -21,11 +21,13 @@ from led_feedback import LedFeedbackRehab
 from visualizator_3d import Visualizator3D
 
 def console_loop(rehab_sys, hwi, data_pub, handlers):
-    #Handles real-time user input from the terminal to control the system
-    #Inputs: rehab_sys. hwi, data_pub and handlers
-    #Outputs:none
+    """
+    Handles real-time user input from the terminal to control the system
+    Inputs: rehab_sys. hwi, data_pub and handlers
+    Outputs:none
+    """
     print(">>> JACK THE GRIPPER: READY <<<")
-    print("Sequence: c -> udr 63 -> store offsets -> tut on")
+    print("Sequence: c -> udr 63 -> store offsets -> start")
     while True:
         try:
             cmd = input().strip()
@@ -43,10 +45,10 @@ def console_loop(rehab_sys, hwi, data_pub, handlers):
                 data_pub.reset()
                 hwi.connect()
                 continue
-            if cmd == "tut on":
+            if cmd == "start":
                 rehab_sys.start()
                 continue
-            if cmd == "tut off":
+            if cmd == "stop":
                 rehab_sys.stop()
                 continue
 
