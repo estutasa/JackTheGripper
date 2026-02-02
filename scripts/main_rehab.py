@@ -28,6 +28,7 @@ def console_loop(rehab_sys, hwi, data_pub, handlers):
     """
     print(">>> JACK THE GRIPPER: READY <<<")
     print("Sequence: c -> udr 63 -> store offsets -> start")
+    print("To terminate the experiment, please enter: stop -> d -> q")
     while True:
         try:
             cmd = input().strip()
@@ -67,12 +68,14 @@ def console_loop(rehab_sys, hwi, data_pub, handlers):
             os._exit(0)
 
 if __name__ == '__main__':
-     #Main execution block. Initialized GUI, hardware, and communication layers
        
     logging.basicConfig(level=logging.CRITICAL)
+
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    file_stl = os.path.join(base_dir, 'models', 'cylinder_5cm.STL')
     
     app = QApplication(sys.argv)
-    viz = Visualizator3D('cylinder_5cm.STL')
+    viz = Visualizator3D(file_stl)
     viz.show()
 
     hwi = Hwi(Hwi.DefaultConfig())

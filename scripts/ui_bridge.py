@@ -1,7 +1,7 @@
 """ 
 FILE:ui_bridge.py
-Purpose: Acts as a bridge between the data acquisition and the 3D visualization interfac. 
-Maps raw sensor data ino clinical zones and streams intensity vector for real-time tracking.
+Purpose: Acts as a bridge between the data acquisition and the 3D visualization interfac
+Maps raw sensor data ino clinical zones and streams intensity vector for real-time tracking
 """
 
 import numpy as np
@@ -10,7 +10,7 @@ class UIBridge:
     def __init__(self,visualizer_window):
         """
         Initializes the bridge with a reference to the 3D window
-        Inputs:visualizer_window (Visualizator 3D).
+        Inputs:visualizer_window (Visualizator 3D)
         Outputs: none
         """
         self.gui=visualizer_window
@@ -19,12 +19,12 @@ class UIBridge:
 
     def process_and_stream(self, raw_scn_data):
         """
-        Maps raw hardware data to a 16-senosr intensity vector. 
+        Maps raw hardware data to a 16-sensor intensity vector and streams it to the 3D visualizer
         Inputs: raw_scn_data(dict)
         Outputs: None
         """
         intensity_vector=[0.0]*16
-        #Iterating through cell IDs 1-16 
+        #Iterating through cell IDs 1-16
         for cell_id,data in raw_scn_data.items():
             raw_val=data.get('force',0)
             normalized=np.clip(raw_val/self.THRESHOLD_GREEN,0,1)
@@ -34,7 +34,7 @@ class UIBridge:
     
     def get_zone_averages(self,intensity_vector):
         """
-        Calculaes average pressure for each clinical zone
+        Calculates average pressure for each clinical zone from the intensity vector
         Iputus: intensity vector (list)
         Output: dict containaing mean values of each zone (Left,right, center)
         """

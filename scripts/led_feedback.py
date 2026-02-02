@@ -1,8 +1,7 @@
 """ 
 FILE: led_feedback.py
-Purpose: Manages real time feedback loop for the rehabilitation systems. 
-Coordinates LED colors based on pressure levels and synchronizes 
-data tranmission to the 3D visualization interface.
+Purpose: Manages real time feedback loop for the rehabilitation system;
+Coordinates LED colors based on pressure levels and synchronizes data tranmission to the 3D visualization interface
 """
 import threading
 import time
@@ -14,7 +13,7 @@ from ui_bridge import UIBridge
 class LedFeedbackRehab:
     def __init__(self, hwi, data_pub, led_ctrl, visualizer=None):
         """
-        Initializes feedback controller
+        Initializes feedback controller with hardware interface, data publisher, LED controller and optional visualizer
         Inputs: hwi, data_pub, led_ctrl, visualizer
         Outputs:none
         """
@@ -32,7 +31,7 @@ class LedFeedbackRehab:
         self.__current_color = COLOR_VAL_MAP.get("white")
 
     def start(self):
-        #Starts the background feedback loop thread.
+        #Starts the background feedback loop thread
         #Inputs: none
         #Outputs:none
         if not self.__started:

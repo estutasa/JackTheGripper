@@ -22,11 +22,11 @@ class GripLogic:
         0: White (Idle), 1: Green (Good), 2: Red (Weak)
         """
         if force_val > self.STRONG_GRIP:
-            print("GOOD FORCE:", force_val) 
+            # print("GOOD FORCE:", force_val) 
             return 1
         elif force_val > self.WEAK_GRIP:
-            print("BAD FORCE:", force_val) 
-        0: White (Idle), 1: Green (Good), 2: Red (Weak)
+            # print("BAD FORCE:", force_val) 
+            return 2
         if force_val > self.STRONG_GRIP:
             return 1
         elif force_val > self.WEAK_GRIP:

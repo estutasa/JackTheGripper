@@ -11,10 +11,14 @@ NISE Project Block 2
 - `visualizator_3d.py`: Graphical core. Renders the 3D handle and gives real-time feedback
 
 ## Installation & Dependencies
+Run `make setup` to install all dependencies automatically.
+
 - Python 3.12.3
 - Standard libraries: `threading`, `time`, `logging`, `copy`, `sys`, `os`
 - Custom libraries: `scn` (Skin Cell Network)
-- External libraries: `pip install PyQt6 pyqtgraph PyOpenGL numpy-stl numpy`
+- External libraries: `PyQt6 pyqtgraph PyOpenGL numpy-stl numpy`
+
+After creating a virtual environment, can be installed running `pip install -r requirements.txt`
 
 ## Usage
 1. Connect to WIFI network `nise0XX` (Password: `nise2025`).

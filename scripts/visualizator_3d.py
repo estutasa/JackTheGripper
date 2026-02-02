@@ -35,9 +35,13 @@ class Visualizator3D(QMainWindow):
         self.viewer=gl.GLViewWidget()
         self.layout.addWidget(self.viewer, stretch=3)
 
-        self.feedback_label=QLabel("Grip Stronger")
+        # Initial state: Waiting for data stream to start
+        self.feedback_label=QLabel("WAITING FOR EXPERIMENT TO START")
         self.feedback_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.feedback_label.setStyleSheet("font-size: 30px; font-weight: bold; color: #FF4444; background-color: black; padding: 10px;")
+        self.feedback_label.setStyleSheet(
+            "font-size: 25px; font-weight: bold; color: #FFA500; "
+            "background-color: black; padding: 10px; border: 2px solid #FFA500;"
+        )
         self.layout.addWidget(self.feedback_label)
         #Performance chart
         self.plot_widget=pg.PlotWidget(title="Performance Tracking")
@@ -51,11 +55,14 @@ class Visualizator3D(QMainWindow):
         self.curve=self.plot_widget.plot(pen=pg.mkPen('w', width=2))
 
         self.sensor_nodes=[]
+        """
         #axes representation
         axes=gl.GLAxisItem()
         axes.setSize(x=20,y=20,z=20)
         axes.translate(-50,-50,0)
         self.viewer.addItem(axes)
+        """
+        
         #Camera configuation
         self.viewer.opts['center']=QVector3D(0,0,0)
         self.viewer.setCameraPosition(distance=300, elevation=10,azimuth=90)        
@@ -137,27 +144,31 @@ class Visualizator3D(QMainWindow):
         #OUTPUTS: Nonee
         if len(data_vector) !=16:
             return
+        
         threshold=0.33
         weak_threshold=0.05
         avg_intensity = sum(data_vector) / 16
-        if avg_intensity<weak_threshold:
+        
+        # Classification logic - the WAITING message is overwritten as soon as data arrives
+        if avg_intensity < weak_threshold:
             self.feedback_label.setText("PLEASE GRIP")
-            self.feedback_label.setStyleSheet("font-size: 30px; font-weight: bold; color: #FFFFFF; background-color: black; padding: 10px;")
+            self.feedback_label.setStyleSheet("font-size: 30px; font-weight: bold; color: #FFFFFF; background-color: black; padding: 10px; border: none;")
         elif avg_intensity >= threshold:
             self.feedback_label.setText("GOOD JOB!")
-            self.feedback_label.setStyleSheet("font-size: 32px; font-weight: bold; color: #00FF00; background-color: black; padding: 10px;")
+            self.feedback_label.setStyleSheet("font-size: 32px; font-weight: bold; color: #00FF00; background-color: black; padding: 10px; border: none;")
         else:
             self.feedback_label.setText("Grip stronger")
-            self.feedback_label.setStyleSheet("font-size: 30px; font-weight: bold; color: #FF4444; background-color: black; padding: 10px;")
+            self.feedback_label.setStyleSheet("font-size: 30px; font-weight: bold; color: #FF4444; background-color: black; padding: 10px; border: none;")
+        
         #Update each node based on its assigned physical ID
         for node in self.sensor_nodes:
 
             physical_id=node.opts['sensor_id']
             intensity=data_vector[physical_id-1]
             if intensity >= threshold:
-                node.setColor((0.0, 0.0, 8, 1))
+                node.setColor((0.0, 0.0, 0.8, 1)) # Dark Blue for goal reached
             else:
-                #increase progressively
+                #increase progressively from light grey to blue
                 red = 0.6 * (1 - intensity)
                 green = 0.6 * (1 - intensity)
                 blue = 0.6 + (0.4 * intensity)
@@ -186,4 +197,3 @@ if __name__=="__main__":
     window.timer.start(100)
     sys.exit(app.exec())
     """
-     
